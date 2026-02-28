@@ -20,7 +20,7 @@ See [docs/Design.md](./docs/Design.md) for full wireframes.
 
 ### On The Web
 
-_Coming soon — deploying to Render.com_
+__[https://workbrew-m517.onrender.com/](https://workbrew-m517.onrender.com/)__
 
 ### In Your Local Environment
 
@@ -37,14 +37,14 @@ See [docs/PRD.md](./docs/PRD.md) for full user stories and acceptance criteria.
 
 ### MVP (Must Do)
 
-- [ ] Browse all cafes — interactive Leaflet/OpenStreetMap map + responsive card grid
-- [ ] Filter cafes by WiFi, sockets, call-friendliness, and neighborhood
-- [ ] Add a new cafe via public submission form (WTForms + CSRF)
-- [ ] Admin login (env var credentials, session-based)
-- [ ] Admin delete cafe (protected POST route)
-- [ ] Tailwind CSS responsive design (mobile-first, single-column on small screens)
-- [ ] PostgreSQL-compatible SQLAlchemy models (SQLite dev → Postgres prod)
-- [ ] Deploy to Render.com with Gunicorn
+- [x] Browse all cafes — interactive Leaflet/OpenStreetMap map + responsive card grid
+- [x] Filter cafes by WiFi, sockets, call-friendliness, and neighborhood
+- [x] Add a new cafe via public submission form (WTForms + CSRF)
+- [x] Admin login (env var credentials, session-based)
+- [x] Admin delete cafe (protected POST route)
+- [x] Tailwind CSS responsive design (mobile-first, single-column on small screens)
+- [x] PostgreSQL-compatible SQLAlchemy models (SQLite dev → Postgres prod)
+- [x] Deploy to Render.com with Gunicorn
 
 ### Stretch Goals (Should Do)
 
@@ -102,20 +102,20 @@ flowchart TD
 
 ## Development Workflow
 
-- [ ] 1. Initialize Flask app, SQLAlchemy config, `.env` wiring
-- [ ] 2. Define `Cafe` model in `models.py` with `lat`/`lng` columns
-- [ ] 3. Run `geocode.py` to populate lat/lng for existing 21 cafes
-- [ ] 4. Build `GET /` route with filter logic and `index.html` template (cards only first)
-- [ ] 5. Add Leaflet map to `index.html` with cafe pins from JSON context
-- [ ] 6. Wire up filter chip bar (GET params → backend filter → template re-render)
-- [ ] 7. Build `GET/POST /add` route and `add_cafe.html` with WTForms
-- [ ] 8. Build `GET/POST /admin/login` and `GET /admin/logout` routes
-- [ ] 9. Wire up `POST /cafe/<id>/delete` with admin session guard
-- [ ] 10. Sentinel review — CSRF, input validation, session security
-- [ ] 11. Stella polish — Tailwind responsive grid, amenity icons, flash banners, mobile layout
-- [ ] 12. Vera QA — form validation tests, admin flow tests, mobile responsiveness check
-- [ ] 13. Switch to PostgreSQL locally (`DATABASE_URL` env var) and verify schema
-- [ ] 14. Deploy to Render.com — web service + env vars + DB seed
+- [x] 1. Initialize Flask app, SQLAlchemy config, `.env` wiring
+- [x] 2. Define `Cafe` model in `models.py` with `lat`/`lng` columns
+- [x] 3. Run `geocode.py` to populate lat/lng for existing 21 cafes
+- [x] 4. Build `GET /` route with filter logic and `index.html` template (cards only first)
+- [x] 5. Add Leaflet map to `index.html` with cafe pins from JSON context
+- [x] 6. Wire up filter chip bar (GET params → backend filter → template re-render)
+- [x] 7. Build `GET/POST /add` route and `add_cafe.html` with WTForms
+- [x] 8. Build `GET/POST /admin/login` and `GET /admin/logout` routes
+- [x] 9. Wire up `POST /cafe/<id>/delete` with admin session guard
+- [x] 10. Sentinel review — CSRF, input validation, session security
+- [x] 11. Stella polish — Tailwind responsive grid, amenity icons, flash banners, mobile layout
+- [x] 12. Vera QA — 35/35 tests passing, 97% coverage
+- [x] 13. Switch to PostgreSQL on Render (`DATABASE_URL` + `DB_SCHEMA=workbrew`)
+- [x] 14. Deploy to Render.com — web service + env vars + DB seed
 - [ ] 15. END-TO-END TEST on live Render URL
 - [ ] 16. FULL DEPLOYMENT — portfolio ready
 
@@ -124,6 +124,7 @@ flowchart TD
 | DATE | COMMENTS |
 | --- | --- |
 | 2026-02-27 | Project kickoff complete. PRD, Design, README generated. Git initialized. Ready for Phase 1 development. |
+| 2026-02-27 | Full build complete. Flask app, Leaflet map, admin auth, CSRF, 35-test QA suite (97% coverage). Deployed to Render.com at [https://workbrew-m517.onrender.com/](https://workbrew-m517.onrender.com/) using shared rudil24_db Postgres instance with workbrew schema isolation. |
 
 ## References
 
