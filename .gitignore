@@ -17,6 +17,9 @@
 .DS_Store
 Thumbs.db
 
+# Flask instance folder (contains SQLite DB + local config)
+instance/
+
 # Python cache/venv/system/testing files
 __pycache__/
 *.py[cod]
