@@ -3,6 +3,7 @@ import os
 
 from dotenv import load_dotenv
 from flask import Flask, abort, flash, redirect, render_template, request, session, url_for
+from sqlalchemy import text
 
 from extensions import csrf, db
 from forms import AdminLoginForm, CafeForm
@@ -23,6 +24,16 @@ def create_app() -> Flask:
         db_url = db_url.replace("postgres://", "postgresql+psycopg2://", 1)
     app.config["SQLALCHEMY_DATABASE_URI"] = db_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+    # ── Schema isolation (Postgres only) ─────────────────────────────────────
+    # DB_SCHEMA scopes all tables to a named schema (e.g. "workbrew") so this
+    # app's data stays isolated from other apps sharing the same Postgres
+    # instance. Unset locally — SQLite doesn't use schemas.
+    db_schema = os.getenv("DB_SCHEMA", "").strip()
+    if db_schema and not db_url.startswith("sqlite"):
+        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+            "connect_args": {"options": f"-csearch_path={db_schema},public"},
+        }
 
     # ── Extensions ───────────────────────────────────────────────────────────
     db.init_app(app)
@@ -118,9 +129,14 @@ def create_app() -> Flask:
 
 app = create_app()
 
-# Create tables on every cold start (idempotent — safe for both SQLite and
-# Postgres). Runs whether launched via `gunicorn app:app` or `python app.py`.
+# Bootstrap schema + tables on every cold start (both steps are idempotent).
 with app.app_context():
+    db_schema = os.getenv("DB_SCHEMA", "").strip()
+    if db_schema:
+        # Ensure the schema exists before create_all() tries to place tables in it.
+        with db.engine.connect() as conn:
+            conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {db_schema}"))
+            conn.commit()
     db.create_all()
 
 if __name__ == "__main__":

@@ -1,9 +1,3 @@
-databases:
-  - name: workbrew-db
-    databaseName: workbrew
-    user: workbrew
-    plan: free
-
 services:
   - type: web
     name: workbrew
@@ -13,13 +7,13 @@ services:
     plan: free
     envVars:
       - key: DATABASE_URL
-        fromDatabase:
-          name: workbrew-db
-          property: connectionString
+        sync: false               # paste Internal Database URL from rudil24_db in the dashboard
+      - key: DB_SCHEMA
+        value: workbrew           # all tables live in the workbrew schema
       - key: SECRET_KEY
         generateValue: true       # Render auto-generates a secure random value
       - key: ADMIN_USER
-        sync: false               # Set in Render dashboard → Environment
+        sync: false               # set in Render dashboard → Environment
       - key: ADMIN_PASS
-        sync: false               # Set in Render dashboard → Environment
+        sync: false               # set in Render dashboard → Environment
     autoDeploy: true
