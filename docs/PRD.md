@@ -179,7 +179,7 @@ See `docs/Design.md` for wireframes and component breakdown.
 ## 7. Rollout Plan
 
 - [x] __Phase 0:__ Project setup — config files, git init, `docs/` *(complete)*
-- [ ] __Phase 1:__ Local dev — Flask app, SQLAlchemy models, geocode migration, all routes, Tailwind UI, Leaflet map
-- [ ] __Phase 2:__ QA — Vera runs tests, validates forms, checks mobile responsiveness and admin flows
-- [ ] __Phase 3:__ Deploy to Render.com — PostgreSQL migration, Gunicorn config, environment variables
-- [ ] __Phase 4:__ Portfolio review & retro
+- [x] __Phase 1:__ Local dev — Flask app, SQLAlchemy models, geocode migration, all routes, Tailwind UI, Leaflet map
+- [x] __Phase 2:__ QA — Vera runs tests, validates forms, checks mobile responsiveness and admin flows
+- [x] __Phase 3:__ Deploy to Render.com — PostgreSQL migration, Gunicorn config, environment variables
+- [x] __Phase 4:__ Portfolio review & retro

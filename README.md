@@ -1,4 +1,4 @@
-# Cafe & WiFi Finder — @rudil24
+# Cafe & WiFi Finder — Rudi Lewis w/ Claude Code
 
 A community-maintained, filterable web app for remote workers to discover London cafes with the amenities that actually matter: WiFi, power sockets, and call-friendly environments.
 
@@ -6,11 +6,11 @@ A community-maintained, filterable web app for remote workers to discover London
 
 | Category | Description | Cost |
 | --- | --- | --- |
-| Development Labor | ~20 hrs @ $100/hr (OPST Agentic Team) | $2,000 |
-| AI Tokens | Claude Pro subscription | ~$5.00 |
-| Production Hosting | Render.com Web Service (free tier) + PostgreSQL | $0.00 |
+| Development Labor | ~2 hrs @ $100/hr (RL) | $200 |
+| AI Tokens | Claude Pro subscription 1 day of feb =$17/28 = $0.60 | ~$0.60 |
+| Production Hosting | Render.com Web Service (free tier) + PostgreSQ 1/6 of monthly $6db | $1.00 |
 | Other | n/a | $0.00 |
-| __TOTAL__ | | __$2,005__ |
+| __TOTAL__ | | __$201.60__ |
 
 ## Mockup
 

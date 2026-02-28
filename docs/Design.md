@@ -11,19 +11,23 @@
 ## 1. Architecture Overview
 
 ```mermaid
-architecture-beta
-  group client(internet)[Browser]
-  group server(server)[Render.com Web Service]
-  group db(database)[Render.com PostgreSQL]
+flowchart LR
+    subgraph Client [Browser]
+        browser("User / Admin")
+    end
 
-  service browser(internet)[User / Admin] in client
-  service flask(server)[Flask + Gunicorn] in server
-  service templates(server)[Jinja2 Templates] in server
-  service pg(database)[rudil24_db] in db
+    subgraph Server [Render.com Web Service]
+        flask("Flask + Gunicorn")
+        templates("Jinja2 Templates")
+    end
 
-  browser:R --> L:flask
-  flask:R --> L:templates
-  flask:B --> T:pg
+    subgraph DB [Render.com PostgreSQL]
+        pg[("rudil24_db")]
+    end
+
+    browser -->|HTTP| flask
+    flask -->|Renders| templates
+    flask -->|Query| pg
 ```
 
 __Stack Summary:__
