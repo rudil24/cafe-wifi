@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}WorkBrew{% endblock %} — Find Your Remote Office</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { serif: ['Instrument Serif', 'serif'], sans: ['Inter', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #FDFAF6; }
+    .cafe-card { transition: transform 0.18s ease, box-shadow 0.18s ease; }
+    .cafe-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.10); }
+    .chip { border: 1.5px solid #d6d3d1; color: #57534e; background: white; transition: all 0.15s; cursor: pointer; }
+    .chip:hover { border-color: #b45309; color: #b45309; }
+    .chip-active { background: #92400e !important; color: #fef3c7 !important; border-color: #92400e !important; }
+    .form-input {
+      width: 100%; border: 1.5px solid #d6d3d1; border-radius: 0.75rem;
+      padding: 0.65rem 0.9rem; font-size: 0.9rem; background: white;
+      color: #1c1917; transition: border-color 0.15s; font-family: 'Inter', sans-serif;
+    }
+    .form-input:focus { outline: none; border-color: #b45309; box-shadow: 0 0 0 3px rgba(180,83,9,0.12); }
+    #map { z-index: 0; }
+    .leaflet-popup-content-wrapper { border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 13px; }
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body class="font-sans text-stone-900 min-h-screen flex flex-col">
+
+  {# ── Admin status bar ── #}
+  {% if is_admin %}
+  <div class="bg-gradient-to-r from-amber-950 to-amber-900 text-amber-200 text-xs py-2 px-6 flex items-center justify-between">
+    <span>🔐 &nbsp;Admin mode active — delete buttons are visible to you only.</span>
+    <a href="{{ url_for('admin_logout') }}" class="text-amber-300 hover:text-white underline font-medium transition-colors">Log Out</a>
+  </div>
+  {% endif %}
+
+  {# ── Navbar ── #}
+  <nav class="bg-[#FDFAF6] border-b border-stone-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="{{ url_for('index') }}" class="font-serif text-[1.65rem] text-amber-900 tracking-tight select-none">
+        WorkBrew
+      </a>
+      <div class="flex items-center gap-3">
+        <a href="{{ url_for('add_cafe') }}"
+           class="bg-amber-800 hover:bg-amber-900 text-amber-50 px-4 py-2 rounded-full text-sm font-medium transition-colors">
+          + Add a Cafe
+        </a>
+        {% if is_admin %}
+          <span class="flex items-center gap-1.5 text-sm font-medium text-stone-500 bg-stone-100 px-3 py-1.5 rounded-full">
+            <span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span>Admin
+          </span>
+        {% else %}
+          <a href="{{ url_for('admin_login') }}"
+             class="text-stone-400 text-sm hover:text-stone-600 transition-colors font-medium px-2">
+            Admin
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  {# ── Flash messages ── #}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="z-40">
+        {% for category, message in messages %}
+          {% set styles = {
+            'success': 'bg-green-50 border-green-200 text-green-800',
+            'danger':  'bg-red-50 border-red-200 text-red-700',
+            'info':    'bg-amber-50 border-amber-200 text-amber-800'
+          } %}
+          <div class="border-b {{ styles.get(category, 'bg-stone-50 border-stone-200 text-stone-700') }} text-sm text-center py-2.5 px-6">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {# ── Page content ── #}
+  <main class="flex-1">
+    {% block content %}{% endblock %}
+  </main>
+
+  {# ── Footer ── #}
+  <footer class="border-t border-stone-200 py-8 text-center text-stone-400 text-sm bg-white mt-auto">
+    <p class="font-serif text-amber-800 text-lg mb-1">WorkBrew</p>
+    <p>© 2026 &middot; Community maintained &middot;
+      <a href="{{ url_for('admin_login') }}" class="underline hover:text-stone-600 transition-colors">Admin</a>
+    </p>
+  </footer>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

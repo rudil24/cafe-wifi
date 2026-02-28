@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WorkBrew — Find Your Remote Office</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { serif: ['Instrument Serif', 'serif'], sans: ['Inter', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #FDFAF6; }
+    .cafe-card { transition: transform 0.18s ease, box-shadow 0.18s ease; }
+    .cafe-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.10); }
+    .chip-active { background: #92400e; color: #fef3c7; border-color: #92400e; }
+    .chip { border: 1.5px solid #d6d3d1; color: #57534e; background: white; transition: all 0.15s; cursor: pointer; }
+    .chip:hover { border-color: #b45309; color: #b45309; }
+    #map { z-index: 0; }
+    .leaflet-popup-content-wrapper { border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 13px; }
+    .flash { animation: slideDown 0.3s ease; }
+    @keyframes slideDown { from { transform: translateY(-10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  </style>
+</head>
+<body class="font-sans text-stone-900 min-h-screen">
+
+  <!-- ═══════════════════════════════ NAVBAR ═══════════════════════════════ -->
+  <nav class="bg-[#FDFAF6] border-b border-stone-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="index.html" class="font-serif text-[1.65rem] text-amber-900 tracking-tight select-none">
+        WorkBrew
+      </a>
+      <div class="flex items-center gap-3">
+        <a href="add_cafe.html"
+           class="bg-amber-800 hover:bg-amber-900 text-amber-50 px-4 py-2 rounded-full text-sm font-medium transition-colors">
+          + Add a Cafe
+        </a>
+        <a href="admin_login.html"
+           class="text-stone-400 text-sm hover:text-stone-600 transition-colors font-medium px-2">
+          Admin
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════ HERO ═══════════════════════════════ -->
+  <div class="bg-amber-900 text-amber-50 py-11 px-6 text-center">
+    <p class="text-amber-400 text-xs font-semibold tracking-widest uppercase mb-3">London · Community Maintained</p>
+    <h1 class="font-serif text-4xl md:text-5xl mb-3 leading-tight">
+      Your remote office,<br><em>brewed daily.</em>
+    </h1>
+    <p class="text-amber-200 text-base max-w-md mx-auto mt-2">
+      Cafes with WiFi, power, and good coffee — verified by remote workers, for remote workers.
+    </p>
+  </div>
+
+  <!-- ═══════════════════════════════ FILTER BAR ═══════════════════════════════ -->
+  <div class="bg-white border-b border-stone-100 py-3 sticky top-[73px] z-40 shadow-sm">
+    <div class="max-w-7xl mx-auto px-6 flex flex-wrap items-center gap-2">
+      <span class="text-stone-400 text-xs font-semibold uppercase tracking-wide mr-1">Filter</span>
+      <button class="chip chip-active px-4 py-1.5 rounded-full text-sm font-medium">All</button>
+      <button class="chip px-4 py-1.5 rounded-full text-sm font-medium">📶 WiFi</button>
+      <button class="chip px-4 py-1.5 rounded-full text-sm font-medium">🔌 Sockets</button>
+      <button class="chip px-4 py-1.5 rounded-full text-sm font-medium">📞 Calls OK</button>
+      <div class="ml-auto flex items-center gap-2">
+        <label class="text-stone-400 text-xs font-medium">Location</label>
+        <select class="border border-stone-300 text-stone-600 rounded-full px-4 py-1.5 text-sm bg-white focus:outline-none focus:border-amber-700 focus:ring-1 focus:ring-amber-700">
+          <option>All Locations</option>
+          <option>Bermondsey</option>
+          <option>Clerkenwell</option>
+          <option>Hackney</option>
+          <option>London Bridge</option>
+          <option>Peckham</option>
+          <option>Shoreditch</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════ MAP ═══════════════════════════════ -->
+  <div id="map" style="height: 380px; width: 100%;"></div>
+
+  <!-- ═══════════════════════════════ CARD GRID ═══════════════════════════════ -->
+  <main class="max-w-7xl mx-auto px-6 py-10">
+    <p class="text-stone-400 text-sm mb-7">
+      Showing <strong class="text-stone-700 font-semibold">21 cafes</strong> across London
+    </p>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+      <!-- ── Card 1 ── -->
+      <div class="cafe-card bg-white rounded-2xl overflow-hidden shadow-sm border border-stone-100">
+        <div class="relative h-48 bg-stone-200 overflow-hidden">
+          <img src="https://atlondonbridge.com/wp-content/uploads/2019/02/Pano_9758_9761-Edit-190918_LTS_Science_Gallery-Medium-Crop-V2.jpg"
+               alt="Science Gallery London" class="w-full h-full object-cover"
+               onerror="this.parentElement.innerHTML='<div class=\'w-full h-full bg-stone-200 flex items-center justify-center text-4xl\'>☕</div>'">
+          <span class="absolute top-3 left-3 bg-amber-900/90 backdrop-blur text-amber-50 text-xs font-semibold px-2.5 py-1 rounded-full">London Bridge</span>
+        </div>
+        <div class="p-5">
+          <h3 class="font-serif text-[1.1rem] text-stone-900 leading-snug">Science Gallery London</h3>
+          <div class="flex flex-wrap gap-1.5 mt-3">
+            <span class="text-xs bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-2.5 py-1 font-medium">🔌 Sockets</span>
+            <span class="text-xs bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-2.5 py-1 font-medium">📞 Calls OK</span>
+          </div>
+          <div class="flex justify-between items-center mt-4 pt-4 border-t border-stone-50 text-sm">
+            <span class="text-stone-400">💺 50+ seats</span>
+            <span class="font-semibold text-stone-700">☕ £2.40</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Card 2 ── -->
+      <div class="cafe-card bg-white rounded-2xl overflow-hidden shadow-sm border border-stone-100">
+        <div class="relative h-48 bg-stone-200 overflow-hidden">
+          <img src="https://images.squarespace-cdn.com/content/v1/5734f3ff4d088e2c5b08fe13/1555848382269-9F13FE1WQDNUUDQOAOXF/ke17ZwdGBToddI8pDm48kAeyi0pcxjZfLZiASAF9yCBZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpzV8NE8s7067ZLWyi1jRvJklJnlBFEUyq1al9AqaQ7pI4DcRJq_Lf3JCtFMXgpPQyk/copeland-park-bar-peckham"
+               alt="Social Copeland Road" class="w-full h-full object-cover"
+               onerror="this.parentElement.innerHTML='<div class=\'w-full h-full bg-stone-200 flex items-center justify-center text-4xl\'>☕</div>'">
+          <span class="absolute top-3 left-3 bg-amber-900/90 backdrop-blur text-amber-50 text-xs font-semibold px-2.5 py-1 rounded-full">Peckham</span>
+        </div>
+        <div class="p-5">
+          <h3 class="font-serif text-[1.1rem] text-stone-900 leading-snug">Social — Copeland Road</h3>
+          <div class="flex flex-wrap gap-1.5 mt-3">
+            <span class="text-xs bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-2.5 py-1 font-medium">📶 WiFi</span>
+            <span class="text-xs bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-2.5 py-1 font-medium">🔌 Sockets</span>
+          </div>
+          <div class="flex justify-between items-center mt-4 pt-4 border-t border-stone-50 text-sm">
+            <span class="text-stone-400">💺 20–30 seats</span>
+            <span class="font-semibold text-stone-700">☕ £2.75</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Card 3 ── -->
+      <div class="cafe-card bg-white rounded-2xl overflow-hidden shadow-sm border border-stone-100">
+        <div class="relative h-48 bg-stone-200 overflow-hidden">
+          <img src="https://lh3.googleusercontent.com/p/AF1QipOMzXpKAQNyUvrjTGHqCgWk8spwnzwP8Ml2aDKt=s1200"
+               alt="One and All Cafe" class="w-full h-full object-cover"
+               onerror="this.parentElement.innerHTML='<div class=\'w-full h-full bg-stone-200 flex items-center justify-center text-4xl\'>☕</div>'">
+          <span class="absolute top-3 left-3 bg-amber-900/90 backdrop-blur text-amber-50 text-xs font-semibold px-2.5 py-1 rounded-full">Peckham</span>
+        </div>
+        <div class="p-5">
+          <h3 class="font-serif text-[1.1rem] text-stone-900 leading-snug">One &amp; All Cafe Peckham</h3>
+          <div class="flex flex-wrap gap-1.5 mt-3">
+            <span class="text-xs bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-2.5 py-1 font-medium">📶 WiFi</span>
+            <span class="text-xs bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-2.5 py-1 font-medium">🔌 Sockets</span>
+          </div>
+          <div class="flex justify-between items-center mt-4 pt-4 border-t border-stone-50 text-sm">
+            <span class="text-stone-400">💺 20–30 seats</span>
+            <span class="font-semibold text-stone-700">☕ £2.75</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Card 4 ── -->
+      <div class="cafe-card bg-white rounded-2xl overflow-hidden shadow-sm border border-stone-100">
+        <div class="relative h-48 bg-stone-200 overflow-hidden">
+          <img src="https://lh3.googleusercontent.com/p/AF1QipN-C650VmJ1XZhzOIBTg1bUu3_to_GHpyrmUplt=s1200"
+               alt="Mare Street Market" class="w-full h-full object-cover"
+               onerror="this.parentElement.innerHTML='<div class=\'w-full h-full bg-stone-200 flex items-center justify-center text-4xl\'>☕</div>'">
+          <span class="absolute top-3 left-3 bg-amber-900/90 backdrop-blur text-amber-50 text-xs font-semibold px-2.5 py-1 rounded-full">Hackney</span>
+        </div>
+        <div class="p-5">
+          <h3 class="font-serif text-[1.1rem] text-stone-900 leading-snug">Mare Street Market</h3>
+          <div class="flex flex-wrap gap-1.5 mt-3">
+            <span class="text-xs bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-2.5 py-1 font-medium">📶 WiFi</span>
+            <span class="text-xs bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-2.5 py-1 font-medium">🔌 Sockets</span>
+          </div>
+          <div class="flex justify-between items-center mt-4 pt-4 border-t border-stone-50 text-sm">
+            <span class="text-stone-400">💺 50+ seats</span>
+            <span class="font-semibold text-stone-700">☕ £2.80</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Card 5 ── -->
+      <div class="cafe-card bg-white rounded-2xl overflow-hidden shadow-sm border border-stone-100">
+        <div class="relative h-48 bg-stone-200 overflow-hidden">
+          <img src="https://lh3.googleusercontent.com/p/AF1QipP_NbZH7A1fIQyp5pRm1jOGwzKsDWewaxka6vDt=s1200"
+               alt="Ace Hotel Shoreditch" class="w-full h-full object-cover"
+               onerror="this.parentElement.innerHTML='<div class=\'w-full h-full bg-stone-200 flex items-center justify-center text-4xl\'>☕</div>'">
+          <span class="absolute top-3 left-3 bg-amber-900/90 backdrop-blur text-amber-50 text-xs font-semibold px-2.5 py-1 rounded-full">Shoreditch</span>
+        </div>
+        <div class="p-5">
+          <h3 class="font-serif text-[1.1rem] text-stone-900 leading-snug">Ace Hotel Shoreditch</h3>
+          <div class="flex flex-wrap gap-1.5 mt-3">
+            <span class="text-xs bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-2.5 py-1 font-medium">📶 WiFi</span>
+            <span class="text-xs bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-2.5 py-1 font-medium">🔌 Sockets</span>
+          </div>
+          <div class="flex justify-between items-center mt-4 pt-4 border-t border-stone-50 text-sm">
+            <span class="text-stone-400">💺 50+ seats</span>
+            <span class="font-semibold text-stone-700">☕ £3.00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Card 6 ── -->
+      <div class="cafe-card bg-white rounded-2xl overflow-hidden shadow-sm border border-stone-100">
+        <div class="relative h-48 bg-stone-200 overflow-hidden">
+          <img src="https://lh3.googleusercontent.com/p/AF1QipMrdTyRRozGBltwxAseQ4QeuNhbED6meQXlCPsx=s1200"
+               alt="Southwark Cathedral Cafe" class="w-full h-full object-cover"
+               onerror="this.parentElement.innerHTML='<div class=\'w-full h-full bg-stone-200 flex items-center justify-center text-4xl\'>☕</div>'">
+          <span class="absolute top-3 left-3 bg-amber-900/90 backdrop-blur text-amber-50 text-xs font-semibold px-2.5 py-1 rounded-full">London Bridge</span>
+        </div>
+        <div class="p-5">
+          <h3 class="font-serif text-[1.1rem] text-stone-900 leading-snug">The Southwark Cathedral Cafe</h3>
+          <div class="flex flex-wrap gap-1.5 mt-3">
+            <span class="text-xs bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-2.5 py-1 font-medium">📶 WiFi</span>
+            <span class="text-xs bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-2.5 py-1 font-medium">🔌 Sockets</span>
+            <span class="text-xs bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-2.5 py-1 font-medium">📞 Calls OK</span>
+          </div>
+          <div class="flex justify-between items-center mt-4 pt-4 border-t border-stone-50 text-sm">
+            <span class="text-stone-400">💺 20–30 seats</span>
+            <span class="font-semibold text-stone-700">☕ £2.30</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /grid -->
+
+    <!-- Load more hint -->
+    <div class="text-center mt-10 text-stone-400 text-sm">
+      Showing 6 of 21 cafes &mdash; scroll loads more
+    </div>
+
+  </main><!-- /main -->
+
+  <!-- ═══════════════════════════════ FOOTER ═══════════════════════════════ -->
+  <footer class="border-t border-stone-200 mt-16 py-8 text-center text-stone-400 text-sm bg-white">
+    <p class="font-serif text-amber-800 text-lg mb-1">WorkBrew</p>
+    <p>© 2026 · Community maintained · <a href="admin_login.html" class="underline hover:text-stone-600 transition-colors">Admin</a></p>
+  </footer>
+
+  <!-- ═══════════════════════════════ LEAFLET MAP INIT ═══════════════════════════════ -->
+  <script>
+    const map = L.map('map', { zoomControl: true, scrollWheelZoom: false })
+                 .setView([51.502, -0.080], 12);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19
+    }).addTo(map);
+
+    const pin = (color) => L.divIcon({
+      html: `<div style="width:13px;height:13px;border-radius:50%;background:${color};border:2.5px solid #fef3c7;box-shadow:0 2px 8px rgba(0,0,0,0.28)"></div>`,
+      className: '',
+      iconSize: [13, 13],
+      iconAnchor: [6, 6]
+    });
+
+    const cafes = [
+      { name: "Science Gallery London",      lat: 51.5004, lng: -0.0949, loc: "London Bridge",  wifi: false, sockets: true  },
+      { name: "Social — Copeland Road",       lat: 51.4738, lng: -0.0688, loc: "Peckham",        wifi: true,  sockets: true  },
+      { name: "One &amp; All Cafe Peckham",   lat: 51.4725, lng: -0.0710, loc: "Peckham",        wifi: true,  sockets: true  },
+      { name: "Old Spike",                    lat: 51.4730, lng: -0.0660, loc: "Peckham",        wifi: true,  sockets: true  },
+      { name: "Fuckoffee Bermondsey",         lat: 51.4985, lng: -0.0825, loc: "Bermondsey",     wifi: true,  sockets: true  },
+      { name: "Mare Street Market",           lat: 51.5388, lng: -0.0604, loc: "Hackney",        wifi: true,  sockets: true  },
+      { name: "Ace Hotel Shoreditch",         lat: 51.5247, lng: -0.0760, loc: "Shoreditch",     wifi: true,  sockets: true  },
+      { name: "Goswell Road Coffee",          lat: 51.5241, lng: -0.1003, loc: "Clerkenwell",    wifi: true,  sockets: true  },
+      { name: "The Southwark Cathedral Cafe", lat: 51.5059, lng: -0.0940, loc: "London Bridge",  wifi: true,  sockets: true  },
+    ];
+
+    cafes.forEach(c => {
+      const color = c.wifi ? '#92400e' : '#a8a29e';
+      L.marker([c.lat, c.lng], { icon: pin(color) })
+       .addTo(map)
+       .bindPopup(
+         `<div style="font-family:Inter,sans-serif;min-width:140px">
+            <strong style="font-size:13px">${c.name}</strong><br>
+            <span style="color:#78716c;font-size:11px">${c.loc}</span><br>
+            <span style="margin-top:4px;display:inline-block;font-size:11px">
+              ${c.wifi ? '📶 WiFi' : ''} ${c.sockets ? '🔌 Sockets' : ''}
+            </span>
+          </div>`
+       );
+    });
+
+    // Filter chips interactivity (visual only for mockup)
+    document.querySelectorAll('.chip').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.chip').forEach(b => b.classList.remove('chip-active'));
+        this.classList.add('chip-active');
+      });
+    });
+  </script>
+
+</body>
+</html>

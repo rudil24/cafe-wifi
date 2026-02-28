@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+{% block title %}Browse Cafes{% endblock %}
+
+{% block content %}
+
+{# ── Hero ── #}
+<div class="bg-amber-900 text-amber-50 py-11 px-6 text-center">
+  <p class="text-amber-400 text-xs font-semibold tracking-widest uppercase mb-3">London &middot; Community Maintained</p>
+  <h1 class="font-serif text-4xl md:text-5xl mb-3 leading-tight">
+    Your remote office,<br><em>brewed daily.</em>
+  </h1>
+  <p class="text-amber-200 text-base max-w-md mx-auto mt-2">
+    Cafes with WiFi, power, and good coffee — verified by remote workers, for remote workers.
+  </p>
+</div>
+
+{# ── Filter bar ── #}
+<div class="bg-white border-b border-stone-100 py-3 z-40 shadow-sm">
+  <form method="GET" action="{{ url_for('index') }}" id="filter-form"
+        class="max-w-7xl mx-auto px-6 flex flex-wrap items-center gap-2">
+
+    {# Hidden filter inputs — enabled/disabled by JS chip clicks #}
+    <input type="hidden" name="wifi"    value="1" id="inp-wifi"    {% if not active_wifi    %}disabled{% endif %}>
+    <input type="hidden" name="sockets" value="1" id="inp-sockets" {% if not active_sockets %}disabled{% endif %}>
+    <input type="hidden" name="calls"   value="1" id="inp-calls"   {% if not active_calls   %}disabled{% endif %}>
+
+    <span class="text-stone-400 text-xs font-semibold uppercase tracking-wide mr-1">Filter</span>
+
+    <button type="button" id="chip-all"
+            class="chip px-4 py-1.5 rounded-full text-sm font-medium {% if not active_wifi and not active_sockets and not active_calls %}chip-active{% endif %}"
+            onclick="clearFilters()">
+      All
+    </button>
+    <button type="button" id="chip-wifi"
+            class="chip px-4 py-1.5 rounded-full text-sm font-medium {% if active_wifi %}chip-active{% endif %}"
+            onclick="toggleChip('wifi')">
+      📶 WiFi
+    </button>
+    <button type="button" id="chip-sockets"
+            class="chip px-4 py-1.5 rounded-full text-sm font-medium {% if active_sockets %}chip-active{% endif %}"
+            onclick="toggleChip('sockets')">
+      🔌 Sockets
+    </button>
+    <button type="button" id="chip-calls"
+            class="chip px-4 py-1.5 rounded-full text-sm font-medium {% if active_calls %}chip-active{% endif %}"
+            onclick="toggleChip('calls')">
+      📞 Calls OK
+    </button>
+
+    <div class="ml-auto flex items-center gap-2">
+      <label for="location-select" class="text-stone-400 text-xs font-medium">Location</label>
+      <select id="location-select" name="location"
+              class="border border-stone-300 text-stone-600 rounded-full px-4 py-1.5 text-sm bg-white focus:outline-none focus:border-amber-700 focus:ring-1 focus:ring-amber-700"
+              onchange="document.getElementById('filter-form').submit()">
+        <option value="">All Locations</option>
+        {% for loc in locations %}
+          <option value="{{ loc }}" {% if active_location == loc %}selected{% endif %}>{{ loc }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </form>
+</div>
+
+{# ── Map ── #}
+<div id="map" style="height: 380px; width: 100%;"></div>
+
+{# ── Card grid ── #}
+<section class="max-w-7xl mx-auto px-6 py-10">
+
+  <p class="text-stone-400 text-sm mb-7">
+    Showing
+    <strong class="text-stone-700 font-semibold">{{ cafes | length }}</strong>
+    cafe{{ 's' if cafes | length != 1 else '' }}
+    {% if active_wifi or active_sockets or active_calls or active_location %}
+      matching your filters
+      &mdash; <a href="{{ url_for('index') }}" class="text-amber-700 hover:underline">clear all</a>
+    {% else %}
+      across London
+    {% endif %}
+  </p>
+
+  {% if cafes %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for cafe in cafes %}
+        <div class="cafe-card bg-white rounded-2xl overflow-hidden shadow-sm border border-stone-100">
+
+          {# Photo #}
+          <div class="relative h-48 bg-stone-200 overflow-hidden">
+            <img src="{{ cafe.img_url }}" alt="{{ cafe.name }}"
+                 class="w-full h-full object-cover"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+            <div class="absolute inset-0 bg-stone-200 items-center justify-center text-4xl hidden">☕</div>
+            <span class="absolute top-3 left-3 bg-amber-900/90 backdrop-blur text-amber-50 text-xs font-semibold px-2.5 py-1 rounded-full">
+              {{ cafe.location }}
+            </span>
+          </div>
+
+          <div class="p-5">
+            <h3 class="font-serif text-[1.1rem] text-stone-900 leading-snug">{{ cafe.name }}</h3>
+
+            {# Amenity badges — only show what the cafe has #}
+            <div class="flex flex-wrap gap-1.5 mt-3">
+              {% if cafe.has_wifi %}
+                <span class="text-xs bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-2.5 py-1 font-medium">📶 WiFi</span>
+              {% endif %}
+              {% if cafe.has_sockets %}
+                <span class="text-xs bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-2.5 py-1 font-medium">🔌 Sockets</span>
+              {% endif %}
+              {% if cafe.can_take_calls %}
+                <span class="text-xs bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-2.5 py-1 font-medium">📞 Calls OK</span>
+              {% endif %}
+              {% if cafe.has_toilet %}
+                <span class="text-xs bg-stone-50 text-stone-500 border border-stone-200 rounded-full px-2.5 py-1 font-medium">🚻 Toilet</span>
+              {% endif %}
+            </div>
+
+            {# Seats & price #}
+            <div class="flex justify-between items-center mt-4 pt-4 border-t border-stone-50 text-sm">
+              <span class="text-stone-400">
+                {% if cafe.seats %}💺 {{ cafe.seats }} seats{% else %}💺 —{% endif %}
+              </span>
+              <span class="font-semibold text-stone-700">
+                {% if cafe.coffee_price %}☕ {{ cafe.coffee_price }}{% else %}☕ —{% endif %}
+              </span>
+            </div>
+
+            {# Admin delete form #}
+            {% if is_admin %}
+              <form method="POST" action="{{ url_for('delete_cafe', cafe_id=cafe.id) }}"
+                    data-name="{{ cafe.name | e }}"
+                    onsubmit="return confirm('Delete ' + this.dataset.name + '?\n\nThis cannot be undone.')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit"
+                        class="mt-3 w-full border-1.5 border-red-200 text-red-500 hover:bg-red-50 hover:border-red-300 rounded-xl py-2 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
+                        style="border: 1.5px solid #fca5a5;">
+                  🗑 &nbsp;Delete Listing
+                </button>
+              </form>
+            {% endif %}
+
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+  {% else %}
+    {# Empty state #}
+    <div class="text-center py-24">
+      <p class="text-6xl mb-5">☕</p>
+      <h2 class="font-serif text-2xl text-stone-700 mb-2">No cafes match your filters.</h2>
+      <p class="text-stone-400 text-sm mb-6">Try clearing some filters or add a cafe you know about.</p>
+      <div class="flex justify-center gap-3">
+        <a href="{{ url_for('index') }}"
+           class="border border-amber-700 text-amber-700 px-5 py-2 rounded-full text-sm font-medium hover:bg-amber-50 transition-colors">
+          Clear Filters
+        </a>
+        <a href="{{ url_for('add_cafe') }}"
+           class="bg-amber-800 text-amber-50 px-5 py-2 rounded-full text-sm font-medium hover:bg-amber-900 transition-colors">
+          + Add a Cafe
+        </a>
+      </div>
+    </div>
+  {% endif %}
+
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // ── Filter chip toggle logic ──────────────────────────────────────────────
+  const inputs = { wifi: 'inp-wifi', sockets: 'inp-sockets', calls: 'inp-calls' };
+  const chips  = { wifi: 'chip-wifi', sockets: 'chip-sockets', calls: 'chip-calls' };
+  const form   = document.getElementById('filter-form');
+
+  function toggleChip(key) {
+    const inp = document.getElementById(inputs[key]);
+    inp.disabled = !inp.disabled;
+    document.getElementById(chips[key]).classList.toggle('chip-active', !inp.disabled);
+    const allOff = Object.values(inputs).every(id => document.getElementById(id).disabled);
+    document.getElementById('chip-all').classList.toggle('chip-active', allOff);
+    form.submit();
+  }
+
+  function clearFilters() {
+    Object.values(inputs).forEach(id => document.getElementById(id).disabled = true);
+    document.getElementById('location-select').value = '';
+    form.submit();
+  }
+
+  // ── Leaflet map ───────────────────────────────────────────────────────────
+  const cafesData = {{ cafes_data | tojson }};
+
+  const map = L.map('map', { zoomControl: true, scrollWheelZoom: false })
+               .setView([51.502, -0.090], 12);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19
+  }).addTo(map);
+
+  const makePin = (hasWifi) => L.divIcon({
+    html: `<div style="width:13px;height:13px;border-radius:50%;background:${hasWifi ? '#92400e' : '#a8a29e'};border:2.5px solid #fef3c7;box-shadow:0 2px 8px rgba(0,0,0,0.28)"></div>`,
+    className: '', iconSize: [13, 13], iconAnchor: [6, 6]
+  });
+
+  cafesData.forEach(cafe => {
+    if (cafe.lat == null || cafe.lng == null) return;
+    L.marker([cafe.lat, cafe.lng], { icon: makePin(cafe.has_wifi) })
+     .addTo(map)
+     .bindPopup(
+       `<div style="font-family:Inter,sans-serif;min-width:150px">
+          <strong style="font-size:13px">${cafe.name}</strong><br>
+          <span style="color:#78716c;font-size:11px">${cafe.location}</span><br>
+          <span style="font-size:11px;margin-top:4px;display:inline-block">
+            ${cafe.has_wifi     ? '📶 ' : ''}
+            ${cafe.has_sockets  ? '🔌 ' : ''}
+            ${cafe.can_take_calls ? '📞' : ''}
+          </span>
+        </div>`
+     );
+  });
+
+  // Fit map bounds to visible pins (if any have coordinates)
+  const pinned = cafesData.filter(c => c.lat != null);
+  if (pinned.length > 0) {
+    const bounds = L.latLngBounds(pinned.map(c => [c.lat, c.lng]));
+    map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+  }
+</script>
+{% endblock %}

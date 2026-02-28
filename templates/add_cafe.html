@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}Add a Cafe{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-6 py-14">
+
+  {# ── Header ── #}
+  <div class="mb-10">
+    <p class="text-amber-700 text-xs font-semibold tracking-widest uppercase mb-2">Community Contribution</p>
+    <h1 class="font-serif text-4xl text-stone-900 mb-2">Add a New Cafe</h1>
+    <p class="text-stone-400 text-sm leading-relaxed">
+      Found a great remote-work spot? Share it with the community.
+      Fields marked <span class="text-red-400 font-bold">*</span> are required.
+    </p>
+  </div>
+
+  <form method="POST" action="{{ url_for('add_cafe') }}" novalidate>
+    {{ form.hidden_tag() }}
+
+    <div class="space-y-6">
+
+      {# Cafe Name #}
+      <div>
+        <label for="{{ form.name.id }}" class="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">
+          Cafe Name <span class="text-red-400">*</span>
+        </label>
+        {{ form.name(class="form-input", placeholder="e.g. Monmouth Coffee Borough Market") }}
+        {% for err in form.name.errors %}
+          <p class="text-red-500 text-xs mt-1">{{ err }}</p>
+        {% endfor %}
+        <p class="text-xs text-stone-400 mt-1">Use the full, recognisable name.</p>
+      </div>
+
+      {# Location #}
+      <div>
+        <label for="{{ form.location.id }}" class="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">
+          London Neighbourhood <span class="text-red-400">*</span>
+        </label>
+        {{ form.location(class="form-input", placeholder="e.g. Peckham, Shoreditch, London Bridge") }}
+        {% for err in form.location.errors %}
+          <p class="text-red-500 text-xs mt-1">{{ err }}</p>
+        {% endfor %}
+      </div>
+
+      {# Google Maps URL #}
+      <div>
+        <label for="{{ form.map_url.id }}" class="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">
+          Google Maps URL <span class="text-red-400">*</span>
+        </label>
+        {{ form.map_url(class="form-input", placeholder="https://g.page/...") }}
+        {% for err in form.map_url.errors %}
+          <p class="text-red-500 text-xs mt-1">{{ err }}</p>
+        {% endfor %}
+        <p class="text-xs text-stone-400 mt-1">Paste the share link from Google Maps.</p>
+      </div>
+
+      {# Photo URL #}
+      <div>
+        <label for="{{ form.img_url.id }}" class="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">
+          Photo URL <span class="text-red-400">*</span>
+        </label>
+        {{ form.img_url(class="form-input", placeholder="https://...") }}
+        {% for err in form.img_url.errors %}
+          <p class="text-red-500 text-xs mt-1">{{ err }}</p>
+        {% endfor %}
+        <p class="text-xs text-stone-400 mt-1">A Google Maps photo link works great.</p>
+      </div>
+
+      {# Seats + Price (2-col) #}
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label for="{{ form.seats.id }}" class="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">Seats</label>
+          {{ form.seats(class="form-input", placeholder="e.g. 20-30, 50+") }}
+          {% for err in form.seats.errors %}
+            <p class="text-red-500 text-xs mt-1">{{ err }}</p>
+          {% endfor %}
+        </div>
+        <div>
+          <label for="{{ form.coffee_price.id }}" class="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">Coffee Price</label>
+          {{ form.coffee_price(class="form-input", placeholder="e.g. £3.00") }}
+          {% for err in form.coffee_price.errors %}
+            <p class="text-red-500 text-xs mt-1">{{ err }}</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      {# Amenities #}
+      <div>
+        <p class="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">Amenities</p>
+        <div class="bg-white border border-stone-200 rounded-2xl p-5 space-y-3.5">
+
+          <label class="flex items-start gap-3 cursor-pointer">
+            {{ form.has_wifi(class="mt-0.5 w-4 h-4 accent-amber-700 cursor-pointer") }}
+            <div>
+              <p class="text-sm font-medium text-stone-800">📶 &nbsp;Has WiFi</p>
+              <p class="text-xs text-stone-400">Reliable enough to work on</p>
+            </div>
+          </label>
+          <div class="border-t border-stone-100"></div>
+
+          <label class="flex items-start gap-3 cursor-pointer">
+            {{ form.has_sockets(class="mt-0.5 w-4 h-4 accent-amber-700 cursor-pointer") }}
+            <div>
+              <p class="text-sm font-medium text-stone-800">🔌 &nbsp;Has Power Sockets</p>
+              <p class="text-xs text-stone-400">At least some seats have outlet access</p>
+            </div>
+          </label>
+          <div class="border-t border-stone-100"></div>
+
+          <label class="flex items-start gap-3 cursor-pointer">
+            {{ form.has_toilet(class="mt-0.5 w-4 h-4 accent-amber-700 cursor-pointer") }}
+            <div>
+              <p class="text-sm font-medium text-stone-800">🚻 &nbsp;Has Toilets</p>
+              <p class="text-xs text-stone-400">Customer-accessible restrooms</p>
+            </div>
+          </label>
+          <div class="border-t border-stone-100"></div>
+
+          <label class="flex items-start gap-3 cursor-pointer">
+            {{ form.can_take_calls(class="mt-0.5 w-4 h-4 accent-amber-700 cursor-pointer") }}
+            <div>
+              <p class="text-sm font-medium text-stone-800">📞 &nbsp;Can Take Calls</p>
+              <p class="text-xs text-stone-400">Quiet enough for video calls or meetings</p>
+            </div>
+          </label>
+
+        </div>
+      </div>
+
+      {# Submit #}
+      <div class="pt-2">
+        {{ form.submit(class="w-full bg-amber-800 hover:bg-amber-900 text-amber-50 py-3.5 rounded-full font-semibold text-sm tracking-wide transition-colors cursor-pointer") }}
+        <p class="text-center text-xs text-stone-400 mt-3">
+          Submissions are publicly visible immediately. Admin can remove inaccurate entries.
+        </p>
+      </div>
+
+    </div>
+  </form>
+</div>
+{% endblock %}

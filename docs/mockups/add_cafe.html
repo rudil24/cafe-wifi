@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WorkBrew — Add a Cafe</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { serif: ['Instrument Serif', 'serif'], sans: ['Inter', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #FDFAF6; }
+    .form-input {
+      width: 100%; border: 1.5px solid #d6d3d1; border-radius: 0.75rem;
+      padding: 0.625rem 0.875rem; font-size: 0.9rem; background: white;
+      color: #1c1917; transition: border-color 0.15s;
+      font-family: 'Inter', sans-serif;
+    }
+    .form-input:focus { outline: none; border-color: #b45309; box-shadow: 0 0 0 3px rgba(180,83,9,0.12); }
+    .form-label { font-size: 0.8rem; font-weight: 600; color: #78716c; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.4rem; display: block; }
+    .checkbox-row { display: flex; align-items: center; gap: 0.6rem; cursor: pointer; }
+    .checkbox-row input[type="checkbox"] { width: 1.1rem; height: 1.1rem; accent-color: #b45309; cursor: pointer; }
+  </style>
+</head>
+<body class="font-sans text-stone-900 min-h-screen">
+
+  <!-- ═══════════════════════════════ NAVBAR ═══════════════════════════════ -->
+  <nav class="bg-[#FDFAF6] border-b border-stone-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="index.html" class="font-serif text-[1.65rem] text-amber-900 tracking-tight">WorkBrew</a>
+      <div class="flex items-center gap-3">
+        <a href="add_cafe.html"
+           class="bg-amber-800 hover:bg-amber-900 text-amber-50 px-4 py-2 rounded-full text-sm font-medium transition-colors">
+          + Add a Cafe
+        </a>
+        <a href="admin_login.html" class="text-stone-400 text-sm hover:text-stone-600 transition-colors font-medium px-2">Admin</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════ FORM ═══════════════════════════════ -->
+  <div class="max-w-2xl mx-auto px-6 py-14">
+
+    <!-- Header -->
+    <div class="mb-10">
+      <p class="text-amber-700 text-xs font-semibold tracking-widest uppercase mb-2">Community Contribution</p>
+      <h1 class="font-serif text-4xl text-stone-900 mb-2">Add a New Cafe</h1>
+      <p class="text-stone-400 text-sm leading-relaxed">
+        Found a great remote-work spot? Share it with the community. All fields marked
+        <span class="text-red-400 font-bold">*</span> are required.
+      </p>
+    </div>
+
+    <!-- Flash success (mockup demo) -->
+    <div class="hidden mb-6 bg-green-50 border border-green-200 text-green-800 rounded-xl px-4 py-3 text-sm flex items-center gap-2">
+      ✅ <strong>Cafe added!</strong> &nbsp;Your submission is now live on the map.
+    </div>
+
+    <form class="space-y-6" onsubmit="handleSubmit(event)">
+
+      <!-- Cafe Name -->
+      <div>
+        <label class="form-label">Cafe Name <span class="text-red-400">*</span></label>
+        <input type="text" class="form-input" placeholder="e.g. Monmouth Coffee Borough Market">
+        <p class="text-xs text-stone-400 mt-1">Use the full, recognizable name.</p>
+      </div>
+
+      <!-- Location -->
+      <div>
+        <label class="form-label">London Neighbourhood <span class="text-red-400">*</span></label>
+        <input type="text" class="form-input" placeholder="e.g. Peckham, Shoreditch, London Bridge">
+      </div>
+
+      <!-- Google Maps URL -->
+      <div>
+        <label class="form-label">Google Maps URL <span class="text-red-400">*</span></label>
+        <input type="url" class="form-input" placeholder="https://g.page/...">
+        <p class="text-xs text-stone-400 mt-1">Paste the share link from Google Maps to help others find it.</p>
+      </div>
+
+      <!-- Photo URL -->
+      <div>
+        <label class="form-label">Photo URL <span class="text-red-400">*</span></label>
+        <input type="url" class="form-input" placeholder="https://...">
+        <p class="text-xs text-stone-400 mt-1">Link to a photo of the cafe (Google Maps photo link works great).</p>
+      </div>
+
+      <!-- Two-column: Seats + Price -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="form-label">Number of Seats</label>
+          <input type="text" class="form-input" placeholder="e.g. 20-30, 50+">
+        </div>
+        <div>
+          <label class="form-label">Coffee Price</label>
+          <input type="text" class="form-input" placeholder="e.g. £3.00">
+        </div>
+      </div>
+
+      <!-- Amenities -->
+      <div>
+        <label class="form-label">Amenities</label>
+        <div class="bg-white border border-stone-200 rounded-2xl p-5 space-y-3.5">
+          <label class="checkbox-row">
+            <input type="checkbox" checked>
+            <div>
+              <p class="text-sm font-medium text-stone-800">📶 &nbsp;Has WiFi</p>
+              <p class="text-xs text-stone-400">Reliable enough to work on</p>
+            </div>
+          </label>
+          <div class="border-t border-stone-100"></div>
+          <label class="checkbox-row">
+            <input type="checkbox" checked>
+            <div>
+              <p class="text-sm font-medium text-stone-800">🔌 &nbsp;Has Power Sockets</p>
+              <p class="text-xs text-stone-400">At least some seats have access to outlets</p>
+            </div>
+          </label>
+          <div class="border-t border-stone-100"></div>
+          <label class="checkbox-row">
+            <input type="checkbox">
+            <div>
+              <p class="text-sm font-medium text-stone-800">🚻 &nbsp;Has Toilets</p>
+              <p class="text-xs text-stone-400">Customer-accessible restrooms</p>
+            </div>
+          </label>
+          <div class="border-t border-stone-100"></div>
+          <label class="checkbox-row">
+            <input type="checkbox">
+            <div>
+              <p class="text-sm font-medium text-stone-800">📞 &nbsp;Can Take Calls</p>
+              <p class="text-xs text-stone-400">Quiet enough for video calls or phone meetings</p>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <div class="pt-2">
+        <button type="submit"
+                class="w-full bg-amber-800 hover:bg-amber-900 text-amber-50 py-3.5 rounded-full font-semibold text-sm tracking-wide transition-colors">
+          Submit Cafe →
+        </button>
+        <p class="text-center text-xs text-stone-400 mt-3">
+          All submissions are publicly visible immediately. Admin can remove inaccurate entries.
+        </p>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- ═══════════════════════════════ FOOTER ═══════════════════════════════ -->
+  <footer class="border-t border-stone-200 mt-16 py-8 text-center text-stone-400 text-sm bg-white">
+    <p class="font-serif text-amber-800 text-lg mb-1">WorkBrew</p>
+    <p>© 2026 · Community maintained · <a href="admin_login.html" class="underline hover:text-stone-600">Admin</a></p>
+  </footer>
+
+  <script>
+    function handleSubmit(e) {
+      e.preventDefault();
+      // Mockup: show flash and redirect
+      alert('✅ Cafe submitted! (Mockup — no actual DB write)');
+      window.location.href = 'index.html';
+    }
+  </script>
+
+</body>
+</html>

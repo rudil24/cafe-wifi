@@ -1,0 +1,16 @@
+# Set the default behavior to automatically handle text files.
+* text=auto
+
+# Explicitly declare text files to always be normalized.
+*.txt text
+*.md text
+*.html text
+*.css text
+*.js text
+
+# Declare files that should always have CRLF line endings (e.g., Windows batch files).
+*.bat text eol=crlf
+
+# Denote binary files that should not be modified.
+*.png binary
+*.jpg binary
